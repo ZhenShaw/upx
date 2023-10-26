@@ -238,6 +238,16 @@ ERR_LAB
                 (unsigned char *)xo->buf, &out_len, *(int *)(void *)&h.b_method );
             if (j != 0 || out_len != (nrv_uint)h.sz_unc)
                 err_exit(7);
+
+            ////////////////////////////////////////////////////////
+            unsigned char *tmp = (unsigned char *) xo->buf;
+            size_t i = 0;
+            for (i = 0; i < h.sz_unc; i++) {
+                *tmp = (*tmp) ^ 0xe9;
+                tmp = tmp + 1;
+            }
+            ////////////////////////////////////////////////////////
+
             // Skip Ehdr+Phdrs: separate 1st block, not filtered
             if (h.b_ftid!=0 && f_unf  // have filter
             &&  ((512 < out_len)  // this block is longer than Ehdr+Phdrs
