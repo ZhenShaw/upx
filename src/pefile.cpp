@@ -34,7 +34,7 @@
 
 #define FILLVAL 0
 #define import  my_import // "import" is a keyword since C++20
-
+#define MODIFIED_BY_FLAG "SB"
 /*************************************************************************
 //
 **************************************************************************/
@@ -2120,7 +2120,7 @@ void PeFile::checkHeaderValues(unsigned subsystem, unsigned mask, unsigned ih_en
     if (isection == nullptr)
         throwCantPack("No section was found");
 
-    if (memcmp(isection[0].name, "UPX", 3) == 0)
+    if (memcmp(isection[0].name, MODIFIED_BY_FLAG, 3) == 0)
         throwAlreadyPackedByUPX();
 
     if (!opt->force && IDSIZE(15))
@@ -2540,8 +2540,8 @@ void PeFile::pack0(OutputFile *fo, ht &ih, ht &oh, unsigned subsystem_mask,
     const unsigned ncsize_virt_increase = soxrelocs && (ncsize & oam1) == 0 ? 8 : 0;
 
     // fill the sections
-    strcpy(osection[0].name, "UPX0");
-    strcpy(osection[1].name, "UPX1");
+    strcpy(osection[0].name, MODIFIED_BY_FLAG"0");
+    strcpy(osection[1].name, MODIFIED_BY_FLAG"1");
     // after some windoze debugging I found that the name of the sections
     // DOES matter :( .rsrc is used by oleaut32.dll (TYPELIBS)
     // and because of this lame dll, the resource stuff must be the
@@ -3032,7 +3032,7 @@ int PeFile::canUnpack0(unsigned max_sections, unsigned objs, unsigned ih_entry, 
     fi->readx(isection, sizeof(pe_section_t) * objs);
     bool is_packed = (objs <= max_sections && (IDSIZE(15) || ih_entry > isection[1].vaddr));
     bool found_ph = false;
-    if (memcmp(isection[0].name, "UPX", 3) == 0) {
+    if (memcmp(isection[0].name, MODIFIED_BY_FLAG, 3) == 0) {
         // current version
         fi->seek(isection[1].rawdataptr - 64, SEEK_SET);
         found_ph = readPackHeader(1024);
