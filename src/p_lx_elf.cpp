@@ -1151,7 +1151,18 @@ PackLinuxElf32::buildLinuxLoader(
     unsigned char *const cprLoader = New(unsigned char, sizeof(h) + h.sz_cpr);
     {
     unsigned h_sz_cpr = h.sz_cpr;
-    int r = upx_compress(uncLoader, h.sz_unc, sizeof(h) + cprLoader, &h_sz_cpr,
+        ///////////////////////////////////////////////////////////////////////////
+        // unsigned char *tmp = (unsigned char *) malloc(h.sz_unc * sizeof(char));
+        // memcpy(tmp, uncLoader, h.sz_unc);
+        // unsigned char *tmp0 = tmp;
+        // size_t i = 0;
+        // for (i = 0; i < h.sz_unc; i++) {
+        //     (*tmp) = (*tmp) ^ 0xe9;
+        //     tmp = tmp + 1;
+        // }
+        printf("\n111 buildLinuxLoader32 before upx_compress\n\n");
+        ///////////////////////////////////////////////////////////////////////////
+    int r = upx_compress_skip(uncLoader, h.sz_unc, sizeof(h) + cprLoader, &h_sz_cpr,
         NULL, ph.method, 10, NULL, NULL );
     h.sz_cpr = h_sz_cpr;
     if (r != UPX_E_OK || h.sz_cpr >= h.sz_unc)
@@ -1220,7 +1231,19 @@ PackLinuxElf64::buildLinuxLoader(
     unsigned char *const cprLoader = New(unsigned char, sizeof(h) + h.sz_cpr);
     {
     unsigned h_sz_cpr = h.sz_cpr;
-    int r = upx_compress(uncLoader, h.sz_unc, sizeof(h) + cprLoader, &h_sz_cpr,
+        ///////////////////////////////////////////////////////////////////////////
+    printf("\nbuildLinuxLoader64 before upx_compress\n\n");
+    unsigned char *tmp = (unsigned char *) malloc(h.sz_unc * sizeof(char));
+    memcpy(tmp, uncLoader, h.sz_unc);
+    unsigned char *tmp0 = tmp;
+    size_t i = 0;
+    for (i = 0; i < h.sz_unc; i++) {
+        (*tmp) = (*tmp) ^ 0xe9;
+        tmp = tmp + 1;
+    }
+
+        ///////////////////////////////////////////////////////////////////////////
+    int r = upx_compress(tmp0, h.sz_unc, sizeof(h) + cprLoader, &h_sz_cpr,
         NULL, ph.method, 10, NULL, NULL );
     h.sz_cpr = h_sz_cpr;
     if (r != UPX_E_OK || h.sz_cpr >= h.sz_unc)

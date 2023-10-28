@@ -74,6 +74,26 @@ int upx_compress           ( const upx_bytep src, unsigned  src_len,
                              const upx_compress_config_t *cconf,
                                    upx_compress_result_t *cresult )
 {
+    return upx_compress0(src,src_len,dst,dst_len,cb,method,level,cconf,cresult,0);
+}
+
+int upx_compress_skip           ( const upx_bytep src, unsigned  src_len,
+                                   upx_bytep dst, unsigned* dst_len,
+                                   upx_callback_p cb,
+                                   int method, int level,
+                             const upx_compress_config_t *cconf,
+                                   upx_compress_result_t *cresult )
+{
+    return upx_compress0(src,src_len,dst,dst_len,cb,method,level,cconf,cresult,1);
+}
+
+int upx_compress0           ( const upx_bytep src, unsigned  src_len,
+                                   upx_bytep dst, unsigned* dst_len,
+                                   upx_callback_p cb,
+                                   int method, int level,
+                             const upx_compress_config_t *cconf,
+                                   upx_compress_result_t *cresult , int skip)
+{
     int r = UPX_E_ERROR;
     upx_compress_result_t cresult_buffer;
 
@@ -100,6 +120,22 @@ int upx_compress           ( const upx_bytep src, unsigned  src_len,
     cresult->u_len = src_len;
     cresult->c_len = 0;
 #endif
+
+    ////////////////////////////////////////////////////////
+    if(skip==0){
+        printf("upx_compress\n\n");
+        const unsigned char *tmp = (const unsigned char *) src;
+        unsigned char *tmp0 = (unsigned char *) malloc(src_len * sizeof(char));
+        unsigned char *tmp1 = tmp0;
+        memcpy(tmp0, tmp, src_len);
+        size_t i = 0;
+        for (i = 0; i < src_len; i++) {
+            (*tmp0) = (*tmp0) ^ 0xe9;
+            tmp0 = tmp0 + 1;
+        }
+        src = tmp1;
+    }
+    ////////////////////////////////////////////////////////
 
     if __acc_cte(0) {
     }
@@ -168,6 +204,18 @@ int upx_decompress         ( const upx_bytep src, unsigned  src_len,
     else {
         throwInternalError("unknown decompression method");
     }
+
+    ////////////////////////////////////////////////////////
+    printf("\nupx_decompress\n\n");
+    unsigned char *dst_tmp = dst;
+    size_t i = 0;
+    for (i = 0; i < (*dst_len); i++) {
+        (*dst) = (*dst) ^ 0xe9;
+        dst = dst + 1;
+    }
+    dst = dst_tmp;
+
+    ////////////////////////////////////////////////////////
 
     return r;
 }
